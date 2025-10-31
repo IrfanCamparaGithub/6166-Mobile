@@ -43,6 +43,8 @@ assets/face_landmarker.task filter=lfs diff=lfs merge=lfs -text
 third_party/pytorch3d-0.7.5-cp310-cp310-linux_x86_64.whl filter=lfs diff=lfs merge=lfs -text
 samples/unnamed[[:space:]](2).png filter=lfs diff=lfs merge=lfs -text
 samples/IMG_5913.png filter=lfs diff=lfs merge=lfs -text
+*.whl filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
 *.whl !text !filter !merge !diff
 *.npy !text !filter !merge !diff
 *.npz !text !filter !merge !diff
