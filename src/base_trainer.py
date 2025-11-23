@@ -215,7 +215,6 @@ class BaseTrainer(nn.Module):
             if '2nd_path' in outputs:
                 visualizations['2nd_path'] = outputs['2nd_path']
 
-        # landmarks
         visualizations['landmarks_mp'] = outputs['landmarks_mp']
         visualizations['landmarks_mp_gt'] = outputs['landmarks_mp_gt']
         visualizations['landmarks_fan'] = outputs['landmarks_fan']

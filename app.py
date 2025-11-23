@@ -28,21 +28,6 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 TASK_PATH = ASSETS / "face_landmarker.task"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 CKPT_CANDIDATES = [Path("pretrained_models/SMIRK_em1.pt"), Path("trained_models/SMIRK_em1.pt")]
 FLAME_PKL = ASSETS / "FLAME2020/generic_model.pkl"
 HEAD_OBJ  = ASSETS / "head_template.obj"
@@ -65,9 +50,6 @@ def _create_video_writer(out_base: Path, w: int, h: int, fps: float):
         ("VP80", out_base.with_suffix(".webm")),
         ("MJPG", out_base.with_suffix(".avi")),
     ]
-
-
-
 
     for fourcc_str, out_path in candidates:
         fourcc = cv2.VideoWriter_fourcc(*fourcc_str)
@@ -110,55 +92,6 @@ def draw_mesh(img_bgr, lm, color=(0,255,0), th=1):
 
 # ---------- detectors ----------
 def load_landmarker(task_path: Path, log):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     """
@@ -214,7 +147,7 @@ def load_landmarker(task_path: Path, log):
             return {"image": _image, "make_video": make_video}
 
         except Exception as e:
-            log.append(f"⚠ Tasks API init failed, using FaceMesh fallbacks: {e}")
+            log.append(f" Tasks API init failed, using FaceMesh fallbacks: {e}")
 
     # Fallbacks
     fm_image = mp.solutions.face_mesh.FaceMesh(static_image_mode=True,  max_num_faces=1, refine_landmarks=True)
@@ -269,7 +202,7 @@ def try_load_3d_stack(device: str, log):
         from src.FLAME.FLAME import FLAME
         from src.renderer.renderer import Renderer
     except Exception as e:
-        log.append(f"⚠ Could not import SMIRK/FLAME modules: {e}")
+        log.append(f" Could not import SMIRK/FLAME modules: {e}")
         return None
 
     try:
@@ -284,7 +217,7 @@ def try_load_3d_stack(device: str, log):
         renderer = Renderer(render_full_head=False, obj_filename=str(HEAD_OBJ)).to(device).eval()
         return smirk, flame, renderer
     except Exception as e:
-        log.append(f"⚠ Could not initialize 3D stack: {e}")
+        log.append(f" Could not initialize 3D stack: {e}")
         return None
 
 # ================================
@@ -292,7 +225,7 @@ def try_load_3d_stack(device: str, log):
 # ================================
 if __name__ == "__main__":
     st.set_page_config(page_title="SMIRK — Auto Face Landmark + 3D", layout="wide")
-    st.title("🧠 SMIRK — Auto Face Landmark + 3D")
+    st.title(" SMIRK — Auto Face Landmark + 3D")
     st.sidebar.header("Runtime diagnostics")
     st.sidebar.code(_p3d_diag())
 
@@ -352,14 +285,14 @@ if __name__ == "__main__":
                     rendered = (ren["rendered_img"].clamp(0,1)*255).byte()[0].permute(1,2,0).cpu().numpy()
                 rhs_img = np.concatenate([cv2.cvtColor(crop, cv2.COLOR_BGR2RGB), rendered], axis=1)
             except Exception as e:
-                log.append(f"⚠ 3D render failed on {p.name}: {e}")
+                log.append(f" 3D render failed on {p.name}: {e}")
 
         with col2:
             if rhs_img is not None:
                 st.image(rhs_img, caption=f"{p.name} — {'3D render' if stack else '2D mesh'}")
                 out_path = OUTPUT / p.name
                 cv2.imwrite(str(out_path), cv2.cvtColor(rhs_img, cv2.COLOR_RGB2BGR))
-                st.write(f"✅ Saved: {out_path}")
+                st.write(f" Saved: {out_path}")
             else:
                 st.warning(f"No face detected in {p.name}")
 
@@ -370,7 +303,7 @@ if __name__ == "__main__":
     def process_video(path: Path, detect_video, stride:int=2, do_3d:bool=False):
         cap = cv2.VideoCapture(str(path))
         if not cap.isOpened():
-            log.append(f"⚠ Could not open video: {path.name}")
+            log.append(f" Could not open video: {path.name}")
             return None
 
         fps  = cap.get(cv2.CAP_PROP_FPS) or 30.0
@@ -379,7 +312,7 @@ if __name__ == "__main__":
 
         writer, out_path = _create_video_writer(OUTPUT / f"{path.stem}_mesh", w, h, fps)
         if writer is None:
-            log.append("⚠ Could not initialize any video writer.")
+            log.append(" Could not initialize any video writer.")
             cap.release()
             return None
 
@@ -427,7 +360,7 @@ if __name__ == "__main__":
                             rsz = cv2.resize(rendered, (min(256, w//3), min(256, h//3)))
                             draw[10:10+rsz.shape[0], 10:10+rsz.shape[1]] = cv2.cvtColor(rsz, cv2.COLOR_RGB2BGR)
                         except Exception as e:
-                            log.append(f"⚠ 3D render failed on frame {frame_idx} of {path.name}: {e}")
+                            log.append(f" 3D render failed on frame {frame_idx} of {path.name}: {e}")
 
             if not wrote_preview:
                 cv2.imwrite(str(preview_path), draw)
@@ -437,14 +370,12 @@ if __name__ == "__main__":
             frame_idx += 1
             ts_ms += step_ms
 
-
-
         cap.release()
         writer.release()
         return out_path
 
     if videos:
-        st.header("🎬 Videos")
+        st.header(" Videos")
     for p in videos:
         st.write(f"Processing **{p.name}** …")
         detect_video = make_video()  # fresh detector per file
@@ -459,33 +390,12 @@ if __name__ == "__main__":
                     st.image(str(prev_img), caption=f"{p.name} — preview")
                 mime = "video/webm" if outp.suffix.lower()==".webm" else ("video/mp4" if outp.suffix.lower()==".mp4" else "video/x-msvideo")
                 with open(outp, "rb") as f:
-                    st.download_button("⬇️ Download processed video", f, file_name=outp.name, mime=mime)
+                    st.download_button(" Download processed video", f, file_name=outp.name, mime=mime)
 
             else:
                 st.warning(f"Skipped {p.name}")
         except Exception as e:
             st.exception(e)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     if log:
